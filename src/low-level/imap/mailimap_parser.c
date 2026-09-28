@@ -7531,6 +7531,20 @@ mailimap_mbx_list_oflag_parse(mailstream * fd, MMAPString * buffer, struct maili
   }
   
   if (r == MAILIMAP_ERROR_PARSE) {
+    r = mailimap_token_case_insensitive_parse(fd, buffer, &cur_token,
+                                              "\\HasChildren");
+    if (r == MAILIMAP_NO_ERROR)
+      type = MAILIMAP_MBX_LIST_OFLAG_HASCHILDREN;
+  }
+  
+  if (r == MAILIMAP_ERROR_PARSE) {
+    r = mailimap_token_case_insensitive_parse(fd, buffer, &cur_token,
+                                              "\\HasNoChildren");
+    if (r == MAILIMAP_NO_ERROR)
+      type = MAILIMAP_MBX_LIST_OFLAG_HASNOCHILDREN;
+  }
+
+  if (r == MAILIMAP_ERROR_PARSE) {
     r = mailimap_flag_extension_parse(fd, buffer, parser_ctx, &cur_token,
 				      &flag_ext, progr_rate, progr_fun);
     if (r == MAILIMAP_NO_ERROR)

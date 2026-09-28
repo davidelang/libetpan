@@ -254,6 +254,8 @@ static const struct response_data_case cases[] = {
       MAILIMAP_RESP_DATA_TYPE_MAILBOX_DATA, MAILIMAP_MAILBOX_DATA_FLAGS },
     { "list.imap",
       MAILIMAP_RESP_DATA_TYPE_MAILBOX_DATA, MAILIMAP_MAILBOX_DATA_LIST },
+    { "list-children.imap",
+      MAILIMAP_RESP_DATA_TYPE_MAILBOX_DATA, MAILIMAP_MAILBOX_DATA_LIST },
     { "list-empty-flag-extension.imap",
       MAILIMAP_RESP_DATA_TYPE_MAILBOX_DATA, MAILIMAP_MAILBOX_DATA_LIST },
     { "list-nil-delimiter.imap",

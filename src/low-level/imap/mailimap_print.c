@@ -1007,6 +1007,12 @@ static void mailimap_mbx_list_oflag_print(struct mailimap_mbx_list_oflag *
   case MAILIMAP_MBX_LIST_OFLAG_NOINFERIORS:
     printf("noinferiors");
     break;
+  case MAILIMAP_MBX_LIST_OFLAG_HASCHILDREN:
+    printf("haschildren");
+    break;
+  case MAILIMAP_MBX_LIST_OFLAG_HASNOCHILDREN:
+    printf("hasnochildren");
+    break;
   case MAILIMAP_MBX_LIST_OFLAG_FLAG_EXT:
     printf("%s", oflag->of_flag_ext);
     break;

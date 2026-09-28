@@ -1779,7 +1779,9 @@ mailimap_mbx_list_flags_free(struct mailimap_mbx_list_flags * mbx_list_flags);
 enum {
   MAILIMAP_MBX_LIST_OFLAG_ERROR,       /* on parse error */
   MAILIMAP_MBX_LIST_OFLAG_NOINFERIORS, /* \NoInferior flag */
-  MAILIMAP_MBX_LIST_OFLAG_FLAG_EXT     /* other flag */
+  MAILIMAP_MBX_LIST_OFLAG_FLAG_EXT,    /* other flag */
+  MAILIMAP_MBX_LIST_OFLAG_HASCHILDREN,   /* \HasChildren flag */
+  MAILIMAP_MBX_LIST_OFLAG_HASNOCHILDREN  /* \HasNoChildren flag */
 };
 
 /*
