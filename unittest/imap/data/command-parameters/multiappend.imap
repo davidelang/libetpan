@@ -1,0 +1,3 @@
+TAG1 APPEND "INBOX" (\Seen) {11}
+Hello World (\Draft) {12}
+Hello World2

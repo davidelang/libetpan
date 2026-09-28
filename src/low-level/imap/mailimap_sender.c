@@ -89,7 +89,7 @@ static gboolean mailimap_date_text_send(mailstream * fd,
 
 static int mailimap_date_year_send(mailstream *fd, int year);
 
-static int
+int
 mailimap_date_time_send(mailstream * fd,
 			struct mailimap_date_time * date_time);
 
@@ -118,7 +118,7 @@ static int mailimap_flag_keyword_send(mailstream * fd,
 				      const char * flag_keyword);
 
 
-static int mailimap_flag_list_send(mailstream * fd,
+int mailimap_flag_list_send(mailstream * fd,
 				   struct mailimap_flag_list * flag_list);
 
 
@@ -984,7 +984,7 @@ static int mailimap_date_year_send(mailstream * fd, int year)
                      SP time SP zone DQUOTE
 */
 
-static int
+int
 mailimap_date_time_send(mailstream * fd,
 			struct mailimap_date_time * date_time)
 {
@@ -1475,7 +1475,7 @@ static int mailimap_flag_keyword_send(mailstream * fd,
 =>   flag-list       = "(" [flag *(SP flag)] ")"
 */
 
-static int mailimap_flag_list_send(mailstream * fd,
+int mailimap_flag_list_send(mailstream * fd,
 					struct mailimap_flag_list * flag_list)
 {
   int r;

@@ -192,6 +192,7 @@ let package = Package(
                 "src/low-level/imap/uidplus_sender.c",
                 "src/low-level/imap/uidplus_types.c",
                 "src/low-level/imap/unselect.c",
+                "src/low-level/imap/multiappend.c",
                 "src/low-level/imap/xgmlabels.c",
                 "src/low-level/imap/xgmmsgid.c",
                 "src/low-level/imap/xgmthrid.c",

@@ -56,6 +56,7 @@ etpaninclude_HEADERS = \
 	mailimap_ssl.h \
 	mailimap_types.h \
 	mailimap_types_helper.h \
+	multiappend.h \
 	namespace.h \
 	namespace_types.h \
 	qresync.h \
@@ -124,7 +125,8 @@ libimap_la_SOURCES = \
   mailimap_oauth2.c mailimap_oauth2.h \
   clientid_sender.c clientid_sender.h \
   clientid.c clientid.h \
-  unselect.c unselect.h
+  unselect.c unselect.h \
+  multiappend.c multiappend.h
 
 noinst_HEADERS = \
 	mailimap_id_sender.h \

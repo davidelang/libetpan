@@ -49,6 +49,12 @@ int mailimap_append_send(mailstream * fd,
 			 struct mailimap_date_time * date_time,
 			 size_t literal_size);
 
+int mailimap_flag_list_send(mailstream * fd,
+			   struct mailimap_flag_list * flag_list);
+
+int mailimap_date_time_send(mailstream * fd,
+			   struct mailimap_date_time * date_time);
+
 int mailimap_authenticate_send(mailstream * fd,
 				const char * auth_type);
 
