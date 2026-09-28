@@ -53,6 +53,7 @@ src\low-level\imap\esearch.h
 src\low-level\imap\specialuse.h
 src\low-level\imap\list_status.h
 src\low-level\imap\list_extended.h
+src\low-level\imap\metadata.h
 src\low-level\imap\clientid.h
 src\low-level\imap\condstore.h
 src\low-level\imap\condstore_types.h
