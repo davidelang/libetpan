@@ -3053,7 +3053,7 @@ int mailimap_set_send(mailstream * fd,
 =>   status          = "STATUS" SP mailbox SP "(" status-att *(SP status-att) ")"
 */
 
-static int
+int
 mailimap_status_att_list_send(mailstream * fd,
     struct mailimap_status_att_list * status_att_list)
 {

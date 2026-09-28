@@ -43,6 +43,7 @@ etpaninclude_HEADERS = \
 	enable.h \
 	esearch.h \
 	idle.h \
+	list_status.h \
 	mailimap.h \
 	specialuse.h \
 	mailimap_compress.h \
@@ -132,7 +133,8 @@ libimap_la_SOURCES = \
   multiappend.c multiappend.h \
   binary.c binary.h \
   esearch.c esearch.h \
-  specialuse.c specialuse.h
+  specialuse.c specialuse.h \
+  list_status.c list_status.h
 
 noinst_HEADERS = \
 	mailimap_id_sender.h \

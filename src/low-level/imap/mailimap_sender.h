@@ -147,6 +147,10 @@ mailimap_status_send(mailstream * fd, const char * mb,
 		     struct mailimap_status_att_list * status_att_list);
 
 int
+mailimap_status_att_list_send(mailstream * fd,
+		     struct mailimap_status_att_list * status_att_list);
+
+int
   mailimap_store_send(mailstream * fd,
   struct mailimap_set * set, int use_unchangedsince, uint64_t mod_sequence_valzer,
   struct mailimap_store_att_flags * store_att_flags);
