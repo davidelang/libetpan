@@ -76,6 +76,7 @@ src\low-level\imap\quota.h
 src\low-level\imap\quota_types.h
 src\low-level\imap\uidplus.h
 src\low-level\imap\uidplus_types.h
+src\low-level\imap\unselect.h
 src\low-level\imap\xgmlabels.h
 src\low-level\imap\xgmmsgid.h
 src\low-level\imap\xgmthrid.h

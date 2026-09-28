@@ -6,6 +6,7 @@ CPPFLAGS += \
 	-DHAVE_CONFIG_H \
 	-I$(TOP) \
 	-I$(TOP)/include \
+	-I$(TOP)/build-spm/include \
 	-I$(TOP)/src/data-types \
 	-I$(TOP)/src/driver/interface \
 	-I$(TOP)/src/driver/tools \

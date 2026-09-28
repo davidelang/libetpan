@@ -10,6 +10,7 @@
 #include "mailimap_sender.h"
 #include "mailimap_types.h"
 #include "namespace_sender.h"
+#include "unselect.h"
 
 static jmp_buf test_abort;
 static test_failure_callback active_failure_callback;
@@ -228,6 +229,12 @@ static int send_close(mailstream * stream, void * context)
   return send_crlf(stream, mailimap_close_send(stream));
 }
 
+static int send_unselect(mailstream * stream, void * context)
+{
+  (void) context;
+  return send_crlf(stream, mailimap_token_send(stream, "UNSELECT"));
+}
+
 static int send_expunge(mailstream * stream, void * context)
 {
   (void) context;
@@ -386,7 +393,8 @@ static const struct {
     { "fetch.imap", send_fetch }, { "uid-fetch.imap", send_uid_fetch },
     { "store.imap", send_store }, { "uid-store.imap", send_uid_store },
     { "copy.imap", send_copy }, { "uid-copy.imap", send_uid_copy },
-    { "move.imap", send_move }, { "uid-move.imap", send_uid_move }
+    { "move.imap", send_move }, { "uid-move.imap", send_uid_move },
+    { "unselect.imap", send_unselect }
 };
 
 size_t imap_command_sender_test_count(void)

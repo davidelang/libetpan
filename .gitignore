@@ -121,6 +121,11 @@ xcuserdata/
 /src/main/Makefile
 /src/main/Makefile.in
 /src/main/libetpan_version.h
+config.h
+libetpan-config.h
+**/libetpan-config.h
+COPYING
+INSTALL
 /src/versioninfo.rc
 /src/windows/Makefile
 /src/windows/Makefile.in

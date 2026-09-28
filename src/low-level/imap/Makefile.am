@@ -64,6 +64,7 @@ etpaninclude_HEADERS = \
 	quota_types.h \
 	uidplus.h \
 	uidplus_types.h \
+	unselect.h \
 	xgmlabels.h \
 	xgmmsgid.h \
 	xgmthrid.h \
@@ -122,7 +123,8 @@ libimap_la_SOURCES = \
   mailimap_compress.c mailimap_compress.h \
   mailimap_oauth2.c mailimap_oauth2.h \
   clientid_sender.c clientid_sender.h \
-  clientid.c clientid.h
+  clientid.c clientid.h \
+  unselect.c unselect.h
 
 noinst_HEADERS = \
 	mailimap_id_sender.h \
