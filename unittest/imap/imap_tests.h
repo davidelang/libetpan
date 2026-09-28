@@ -7,6 +7,7 @@
 #include "esearch_test.h"
 #include "idle_test.h"
 #include "multiappend_test.h"
+#include "specialuse_test.h"
 #include "response_data_test.h"
 #include "response_done_test.h"
 #include "unsupported_response_test.h"
