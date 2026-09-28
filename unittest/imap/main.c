@@ -18,6 +18,7 @@ int main(void)
   imap_list_extended_test_run();
   imap_sort_display_test_run();
   imap_metadata_test_run();
+  imap_utf8_test_run();
 
   puts("imap_test: ok");
   return 0;

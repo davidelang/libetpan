@@ -117,6 +117,7 @@ IMAP_TEST_SRCS = \
 	imap/list_extended_test.c \
 	imap/sort_display_test.c \
 	imap/metadata_test.c \
+	imap/utf8_test.c \
 	imap/imap_test_utils.c
 IMAP_TEST_DEPS = $(IMAP_TEST_SRCS) imap/*.h
 IMF_TEST_SRCS = \

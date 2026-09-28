@@ -12,6 +12,7 @@
 #include "multiappend_test.h"
 #include "sort_display_test.h"
 #include "specialuse_test.h"
+#include "utf8_test.h"
 #include "response_data_test.h"
 #include "response_done_test.h"
 #include "unsupported_response_test.h"
