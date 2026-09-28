@@ -11,6 +11,7 @@ int main(void)
   imap_command_parameter_sender_test_run();
   imap_idle_test_run();
   imap_multiappend_test_run();
+  imap_binary_test_run();
 
   puts("imap_test: ok");
   return 0;

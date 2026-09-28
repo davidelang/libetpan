@@ -1,6 +1,7 @@
 #ifndef IMAP_TESTS_H
 #define IMAP_TESTS_H
 
+#include "binary_test.h"
 #include "command_parameter_sender_test.h"
 #include "command_sender_test.h"
 #include "idle_test.h"

@@ -36,6 +36,7 @@ etpaninclude_HEADERS = \
 	acl_types.h \
 	annotatemore.h \
 	annotatemore_types.h \
+	binary.h \
 	clientid.h \
 	condstore.h \
 	condstore_types.h \
@@ -126,7 +127,8 @@ libimap_la_SOURCES = \
   clientid_sender.c clientid_sender.h \
   clientid.c clientid.h \
   unselect.c unselect.h \
-  multiappend.c multiappend.h
+  multiappend.c multiappend.h \
+  binary.c binary.h
 
 noinst_HEADERS = \
 	mailimap_id_sender.h \
