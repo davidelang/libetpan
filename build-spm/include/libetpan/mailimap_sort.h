@@ -98,6 +98,9 @@ extern "C" {
   LIBETPAN_EXPORT
   int mailimap_has_sort(mailimap * session);
 
+  LIBETPAN_EXPORT
+  int mailimap_has_sort_display(mailimap * session);
+
 #ifdef __cplusplus
 }
 #endif

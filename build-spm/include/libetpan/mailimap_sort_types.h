@@ -53,6 +53,8 @@ extern "C" {
     MAILIMAP_SORT_KEY_SIZE,
     MAILIMAP_SORT_KEY_SUBJECT,
     MAILIMAP_SORT_KEY_TO,
+    MAILIMAP_SORT_KEY_DISPLAYFROM,
+    MAILIMAP_SORT_KEY_DISPLAYTO,
     MAILIMAP_SORT_KEY_MULTIPLE
   };
   
@@ -99,6 +101,14 @@ extern "C" {
   LIBETPAN_EXPORT
   struct mailimap_sort_key *
   mailimap_sort_key_new_to(int is_reverse);
+  
+  LIBETPAN_EXPORT
+  struct mailimap_sort_key *
+  mailimap_sort_key_new_displayfrom(int is_reverse);
+
+  LIBETPAN_EXPORT
+  struct mailimap_sort_key *
+  mailimap_sort_key_new_displayto(int is_reverse);
   
   LIBETPAN_EXPORT
   struct mailimap_sort_key *

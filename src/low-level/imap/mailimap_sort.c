@@ -338,6 +338,10 @@ int mailimap_sort_key_send(mailstream * fd,
       return mailimap_token_send(fd, "SUBJECT");
     case MAILIMAP_SORT_KEY_TO:
       return mailimap_token_send(fd, "TO");
+    case MAILIMAP_SORT_KEY_DISPLAYFROM:
+      return mailimap_token_send(fd, "DISPLAYFROM");
+    case MAILIMAP_SORT_KEY_DISPLAYTO:
+      return mailimap_token_send(fd, "DISPLAYTO");
       
     case MAILIMAP_SORT_KEY_MULTIPLE:
       return mailimap_struct_spaced_list_send(fd, key->sortk_multiple,
@@ -452,4 +456,10 @@ LIBETPAN_EXPORT
 int mailimap_has_sort(mailimap * session)
 {
   return mailimap_has_extension(session, "SORT");
+}
+
+LIBETPAN_EXPORT
+int mailimap_has_sort_display(mailimap * session)
+{
+  return mailimap_has_extension(session, "SORT=DISPLAY");
 }

@@ -114,6 +114,16 @@ mailimap_sort_key_new_to(int is_reverse) {
 }
 
 struct mailimap_sort_key *
+mailimap_sort_key_new_displayfrom(int is_reverse) {
+  return mailimap_sort_key_new(MAILIMAP_SORT_KEY_DISPLAYFROM, is_reverse, NULL);
+}
+
+struct mailimap_sort_key *
+mailimap_sort_key_new_displayto(int is_reverse) {
+  return mailimap_sort_key_new(MAILIMAP_SORT_KEY_DISPLAYTO, is_reverse, NULL);
+}
+
+struct mailimap_sort_key *
 mailimap_sort_key_new_multiple(clist /* struct mailimap_sort_key * */ * keys) {
   return mailimap_sort_key_new(MAILIMAP_SORT_KEY_MULTIPLE, false, keys);
 }

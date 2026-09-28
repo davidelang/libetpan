@@ -9,6 +9,7 @@
 #include "list_extended_test.h"
 #include "list_status_test.h"
 #include "multiappend_test.h"
+#include "sort_display_test.h"
 #include "specialuse_test.h"
 #include "response_data_test.h"
 #include "response_done_test.h"
