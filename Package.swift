@@ -197,6 +197,7 @@ let package = Package(
                 "src/low-level/imap/esearch.c",
                 "src/low-level/imap/specialuse.c",
                 "src/low-level/imap/list_status.c",
+                "src/low-level/imap/list_extended.c",
                 "src/low-level/imap/xgmlabels.c",
                 "src/low-level/imap/xgmmsgid.c",
                 "src/low-level/imap/xgmthrid.c",

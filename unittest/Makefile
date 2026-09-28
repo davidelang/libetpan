@@ -114,6 +114,7 @@ IMAP_TEST_SRCS = \
 	imap/esearch_test.c \
 	imap/specialuse_test.c \
 	imap/list_status_test.c \
+	imap/list_extended_test.c \
 	imap/imap_test_utils.c
 IMAP_TEST_DEPS = $(IMAP_TEST_SRCS) imap/*.h
 IMF_TEST_SRCS = \

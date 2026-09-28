@@ -6,6 +6,7 @@
 #include "command_sender_test.h"
 #include "esearch_test.h"
 #include "idle_test.h"
+#include "list_extended_test.h"
 #include "list_status_test.h"
 #include "multiappend_test.h"
 #include "specialuse_test.h"

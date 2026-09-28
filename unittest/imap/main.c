@@ -15,6 +15,7 @@ int main(void)
   imap_esearch_test_run();
   imap_specialuse_test_run();
   imap_list_status_test_run();
+  imap_list_extended_test_run();
 
   puts("imap_test: ok");
   return 0;
