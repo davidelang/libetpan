@@ -41,6 +41,7 @@ etpaninclude_HEADERS = \
 	condstore.h \
 	condstore_types.h \
 	enable.h \
+	esearch.h \
 	idle.h \
 	mailimap.h \
 	mailimap_compress.h \
@@ -128,7 +129,8 @@ libimap_la_SOURCES = \
   clientid.c clientid.h \
   unselect.c unselect.h \
   multiappend.c multiappend.h \
-  binary.c binary.h
+  binary.c binary.h \
+  esearch.c esearch.h
 
 noinst_HEADERS = \
 	mailimap_id_sender.h \

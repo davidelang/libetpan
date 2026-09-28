@@ -49,6 +49,7 @@ src\low-level\imap\acl_types.h
 src\low-level\imap\annotatemore.h
 src\low-level\imap\annotatemore_types.h
 src\low-level\imap\binary.h
+src\low-level\imap\esearch.h
 src\low-level\imap\clientid.h
 src\low-level\imap\condstore.h
 src\low-level\imap\condstore_types.h
