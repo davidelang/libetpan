@@ -28,6 +28,8 @@ They can be installed using [brew](http://brew.sh/).
 
 You can use flag --with-poll for using poll() instead of select() for checking connection status
 
+JSON support is optional. `--with-json=auto` (the default) enables it when json-c 0.14 or newer is present, and leaves JSON disabled otherwise. `--with-json=json-c` requires that json-c. `--with-json=libfastjson` uses libfastjson 1.2304.0 or newer instead. `--with-json=no` disables JSON. JMAP needs this JSON support plus curl.
+
 ### How to link with it
 
     $ gcc -c -o sample.o sample.c `pkg-config libetpan --cflags`

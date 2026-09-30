@@ -28,6 +28,54 @@ static int str_equal(const char * left, const char * right)
   return (left != NULL) && (right != NULL) && (strcmp(left, right) == 0);
 }
 
+static int expect_text(const char * actual, const char * expected,
+    const char * message)
+{
+  if (str_equal(actual, expected))
+    return 1;
+  fprintf(stderr, "%s\n", message);
+  fprintf(stderr, "  expected: %s\n", expected);
+  fprintf(stderr, "  actual:   %s\n", (actual != NULL) ? actual : "(null)");
+  return 0;
+}
+
+static int expect_parse_error(const char * data, size_t len,
+    const char * message)
+{
+  mailjson_value * sentinel;
+  mailjson_value * value;
+  int r;
+
+  sentinel = (mailjson_value *) 1;
+  value = sentinel;
+  r = mailjson_parse(data, len, &value);
+  if (value != sentinel)
+    mailjson_free(value);
+  return check(r == MAILJSON_ERROR_PARSE, message) &&
+      check(value == NULL, "parse error did not clear result");
+}
+
+static int serialize_is(mailjson_value * value, int flags,
+    const char * expected, const char * message)
+{
+  char * data;
+  size_t data_len;
+  int r;
+  int ok;
+
+  data = NULL;
+  data_len = 0;
+  r = mailjson_serialize(value, flags, &data, &data_len);
+  if (!check(r == MAILJSON_NO_ERROR, "serialization failed")) {
+    free(data);
+    return 0;
+  }
+  ok = expect_text(data, expected, message) &&
+      check(data_len == strlen(data), "serialized length mismatch");
+  free(data);
+  return ok;
+}
+
 static int test_parse_invalid_json(void)
 {
   mailjson_value * sentinel;
@@ -353,6 +401,291 @@ static int test_integer_creation_bounds(void)
   return ok;
 }
 
+static int test_solidus_round_trip(void)
+{
+  mailjson_value * value;
+  int r;
+  int ok;
+
+  value = NULL;
+  r = mailjson_parse("{\"s\":\"/\",\"a/b\":1}",
+      strlen("{\"s\":\"/\",\"a/b\":1}"), &value);
+  if (!check(r == MAILJSON_NO_ERROR, "solidus JSON parse failed")) {
+    mailjson_free(value);
+    return 0;
+  }
+  ok = serialize_is(value,
+      MAILJSON_SERIALIZE_COMPACT | MAILJSON_SERIALIZE_SORT_KEYS,
+      "{\"a/b\":1,\"s\":\"/\"}",
+      "solidus serialization mismatch");
+  mailjson_free(value);
+
+  value = NULL;
+  r = mailjson_parse("{\"s\":\"a/b\\\\/c\"}",
+      strlen("{\"s\":\"a/b\\\\/c\"}"), &value);
+  if (!check(r == MAILJSON_NO_ERROR, "backslash solidus parse failed")) {
+    mailjson_free(value);
+    return 0;
+  }
+  ok = serialize_is(value, MAILJSON_SERIALIZE_COMPACT,
+      "{\"s\":\"a/b\\\\/c\"}",
+      "backslash solidus serialization mismatch") && ok;
+  mailjson_free(value);
+
+  value = NULL;
+  r = mailjson_parse("{\"b\":1,\"a\":\"x/y\"}",
+      strlen("{\"b\":1,\"a\":\"x/y\"}"), &value);
+  if (!check(r == MAILJSON_NO_ERROR, "spaced solidus parse failed")) {
+    mailjson_free(value);
+    return 0;
+  }
+  ok = serialize_is(value, 0, "{ \"b\": 1, \"a\": \"x/y\" }",
+      "spaced solidus serialization mismatch") && ok;
+  mailjson_free(value);
+  return ok;
+}
+
+static int test_number_round_trip(void)
+{
+  static const char * inputs[] = { "1.5", "0.1" };
+  size_t index;
+
+  for (index = 0; index < sizeof(inputs) / sizeof(inputs[0]); index ++) {
+    mailjson_value * value;
+    mailjson_value * copy;
+    int r;
+
+    value = NULL;
+    copy = NULL;
+    r = mailjson_parse(inputs[index], strlen(inputs[index]), &value);
+    if (!check(r == MAILJSON_NO_ERROR, "number parse failed")) {
+      mailjson_free(value);
+      return 0;
+    }
+    if (!serialize_is(value, MAILJSON_SERIALIZE_COMPACT, inputs[index],
+        "number serialization mismatch")) {
+      mailjson_free(value);
+      return 0;
+    }
+    r = mailjson_deep_copy(value, &copy);
+    if (!check(r == MAILJSON_NO_ERROR, "number deep copy failed")) {
+      mailjson_free(copy);
+      mailjson_free(value);
+      return 0;
+    }
+    if (!serialize_is(copy, MAILJSON_SERIALIZE_COMPACT, inputs[index],
+        "copied number serialization mismatch")) {
+      mailjson_free(copy);
+      mailjson_free(value);
+      return 0;
+    }
+    mailjson_free(copy);
+    mailjson_free(value);
+  }
+  return 1;
+}
+
+static int test_top_level_null_serialize(void)
+{
+  mailjson_value * value;
+  int r;
+  int ok;
+
+  value = NULL;
+  r = mailjson_parse("null", 4, &value);
+  if (!check(r == MAILJSON_NO_ERROR, "top-level null parse failed")) {
+    mailjson_free(value);
+    return 0;
+  }
+  ok = check(mailjson_is_null(value), "top-level null type mismatch") &&
+      serialize_is(value, MAILJSON_SERIALIZE_COMPACT, "null",
+          "top-level null serialization mismatch");
+  mailjson_free(value);
+
+  value = NULL;
+  r = mailjson_new_null(&value);
+  if (!check(r == MAILJSON_NO_ERROR, "null allocation failed")) {
+    mailjson_free(value);
+    return 0;
+  }
+  ok = serialize_is(value, 0, "null",
+      "constructed null serialization mismatch") && ok;
+  mailjson_free(value);
+  return ok;
+}
+
+static int test_strict_rejections(void)
+{
+  static const char trailing_object[] = "{\"a\":1,}";
+  static const char trailing_array[] = "[1,]";
+  static const char block_comment[] = "{\"a\":1}/*c*/";
+  static const char inside_comment[] = "{/*c*/\"a\":1}";
+  int ok;
+
+  ok = expect_parse_error(trailing_object, strlen(trailing_object),
+      "object trailing comma was not rejected");
+  ok = expect_parse_error(trailing_array, strlen(trailing_array),
+      "array trailing comma was not rejected") && ok;
+  ok = expect_parse_error(block_comment, strlen(block_comment),
+      "trailing comment was not rejected") && ok;
+  return expect_parse_error(inside_comment, strlen(inside_comment),
+      "comment inside an object was not rejected") && ok;
+}
+
+static int test_invalid_utf8(void)
+{
+  static const char ff_text[] = { '"', '\xFF', '"' };
+  static const char overlong[] = { '"', '\xC0', '\x80', '"' };
+  static const char surrogate[] = { '"', '\xED', '\xA0', '\x80', '"' };
+  int ok;
+
+  ok = expect_parse_error(ff_text, sizeof(ff_text),
+      "invalid UTF-8 byte was not rejected");
+  ok = expect_parse_error(overlong, sizeof(overlong),
+      "overlong UTF-8 sequence was not rejected") && ok;
+  return expect_parse_error(surrogate, sizeof(surrogate),
+      "UTF-8 encoded surrogate was not rejected") && ok;
+}
+
+struct visit_keys {
+  int count;
+  int saw_a;
+  int saw_b;
+};
+
+static int collect_keys(const char * key, mailjson_value * value,
+    void * context)
+{
+  struct visit_keys * keys;
+
+  (void) value;
+  keys = context;
+  keys->count ++;
+  if (str_equal(key, "a"))
+    keys->saw_a = 1;
+  if (str_equal(key, "b"))
+    keys->saw_b = 1;
+  return MAILJSON_NO_ERROR;
+}
+
+static int stop_on_first(const char * key, mailjson_value * value,
+    void * context)
+{
+  int * count;
+
+  (void) key;
+  (void) value;
+  count = context;
+  (* count) ++;
+  return MAILJSON_ERROR_PARSE;
+}
+
+static int test_object_foreach(void)
+{
+  mailjson_value * root;
+  struct visit_keys keys;
+  int count;
+  int r;
+  int ok;
+
+  root = NULL;
+  memset(&keys, 0, sizeof(keys));
+  r = mailjson_parse("{\"b\":1,\"a\":true}",
+      strlen("{\"b\":1,\"a\":true}"), &root);
+  if (!check(r == MAILJSON_NO_ERROR, "foreach object parse failed")) {
+    mailjson_free(root);
+    return 0;
+  }
+  r = mailjson_object_foreach(root, collect_keys, &keys);
+  ok = check(r == MAILJSON_NO_ERROR, "foreach failed") &&
+      check(keys.count == 2, "foreach visit count mismatch") &&
+      check(keys.saw_a && keys.saw_b, "foreach missed a key");
+
+  count = 0;
+  r = mailjson_object_foreach(root, stop_on_first, &count);
+  ok = check(r == MAILJSON_ERROR_PARSE, "foreach did not stop on error") &&
+      check(count == 1, "foreach kept going after an error") && ok;
+  mailjson_free(root);
+  return ok;
+}
+
+static int test_deep_copy_independence(void)
+{
+  static const char input[] =
+      "{\"b\":{\"d\":1,\"c\":2},\"a\":[],\"n\":null,\"s\":\"/\"}";
+  static const char expected[] =
+      "{\"a\":[],\"b\":{\"c\":2,\"d\":1},\"n\":null,\"s\":\"/\"}";
+  static const char mutated[] =
+      "{\"a\":[\"z\"],\"b\":{\"c\":2,\"d\":1,\"e\":3},\"n\":null,\"s\":\"/\"}";
+  mailjson_value * root;
+  mailjson_value * copy;
+  mailjson_value * array;
+  mailjson_value * nested;
+  mailjson_value * extra;
+  int r;
+  int ok;
+
+  root = NULL;
+  copy = NULL;
+  array = NULL;
+  nested = NULL;
+  extra = NULL;
+  ok = 0;
+
+  r = mailjson_parse(input, strlen(input), &root);
+  if (!check(r == MAILJSON_NO_ERROR, "deep copy source parse failed"))
+    goto cleanup;
+  if (!serialize_is(root,
+      MAILJSON_SERIALIZE_COMPACT | MAILJSON_SERIALIZE_SORT_KEYS,
+      expected, "sorted nested serialization mismatch"))
+    goto cleanup;
+
+  r = mailjson_deep_copy(root, &copy);
+  if (!check(r == MAILJSON_NO_ERROR, "deep copy failed"))
+    goto cleanup;
+  if (!serialize_is(copy,
+      MAILJSON_SERIALIZE_COMPACT | MAILJSON_SERIALIZE_SORT_KEYS,
+      expected, "deep copy serialization mismatch"))
+    goto cleanup;
+
+  r = mailjson_object_get(copy, "a", &array);
+  if (!check(r == MAILJSON_NO_ERROR, "copied array lookup failed"))
+    goto cleanup;
+  r = mailjson_new_string("z", &extra);
+  if (!check(r == MAILJSON_NO_ERROR, "copied array item allocation failed"))
+    goto cleanup;
+  r = mailjson_array_append_new(array, extra);
+  extra = NULL;
+  if (!check(r == MAILJSON_NO_ERROR, "copied array append failed"))
+    goto cleanup;
+
+  r = mailjson_object_get(copy, "b", &nested);
+  if (!check(r == MAILJSON_NO_ERROR, "copied object lookup failed"))
+    goto cleanup;
+  r = mailjson_new_integer(3, &extra);
+  if (!check(r == MAILJSON_NO_ERROR, "copied integer allocation failed"))
+    goto cleanup;
+  r = mailjson_object_set_new(nested, "e", extra);
+  extra = NULL;
+  if (!check(r == MAILJSON_NO_ERROR, "copied object set failed"))
+    goto cleanup;
+
+  ok = serialize_is(root,
+      MAILJSON_SERIALIZE_COMPACT | MAILJSON_SERIALIZE_SORT_KEYS,
+      expected, "original changed after mutating the copy") &&
+      serialize_is(copy,
+          MAILJSON_SERIALIZE_COMPACT | MAILJSON_SERIALIZE_SORT_KEYS,
+          mutated, "mutated copy serialization mismatch");
+
+ cleanup:
+  mailjson_free(extra);
+  mailjson_free(nested);
+  mailjson_free(array);
+  mailjson_free(copy);
+  mailjson_free(root);
+  return ok;
+}
+
 int main(void)
 {
   int ok;
@@ -366,6 +699,13 @@ int main(void)
   ok = test_build_and_serialize() && ok;
   ok = test_build_scalars_and_sorted_serialize() && ok;
   ok = test_integer_creation_bounds() && ok;
+  ok = test_solidus_round_trip() && ok;
+  ok = test_number_round_trip() && ok;
+  ok = test_top_level_null_serialize() && ok;
+  ok = test_strict_rejections() && ok;
+  ok = test_invalid_utf8() && ok;
+  ok = test_object_foreach() && ok;
+  ok = test_deep_copy_independence() && ok;
 
   if (!ok)
     return 1;

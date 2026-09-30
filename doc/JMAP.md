@@ -27,13 +27,18 @@ Implemented session and transport behavior:
 
 JSON dependency and adapter boundary:
 
-- JSON-C is the selected JSON dependency for low-level JSON support.
-- JSON-C is exposed only through the shared `mailjson_*` adapter in
+- Low-level JSON support uses json-c 0.14 or newer. Configure with
+  `--with-json=libfastjson` to use libfastjson 1.2304.0 or newer instead.
+  The default `--with-json=auto` selects json-c when it is present and does
+  not fall back to libfastjson.
+- Either library is exposed only through the shared `mailjson_*` adapter in
   `src/data-types`.
 - Request, response, session, mail, and blob code use `mailjson_value` and
-  `mailjson_*` directly rather than depending on JSON-C directly.
+  `mailjson_*` directly.
 - `unittest/jmap/jmap-json-test.c` verifies adapter behavior without including
   backend-specific headers.
+- Windows, Android, Xcode, and Swift Package Manager builds stay on JSON-C.
+  libfastjson is selected only through the Unix autotools option above.
 
 Implemented mail methods:
 
@@ -95,8 +100,14 @@ keeping JSON ownership inside the adapter. Prefer typed helpers for stable RFC
   or ordered values by callers.
 - Mailboxes may represent labels rather than strict folders. Callers should not
   assume one mailbox per email.
-- JSON parsing is hidden behind `mailjson_*`. As of this snapshot, that adapter
-  boundary is stable and the concrete backend is JSON-C.
+- JSON parsing and serialization go through `mailjson_*`. With libfastjson,
+  serializing a string that contains a NUL, including one written as `\u0000`,
+  stops at that NUL. json-c emits the `\u0000` escape. `mailjson_string_dup()`
+  already stops at the first NUL with either library.
+- libfastjson accepts well-formed raw UTF-8 and rejects ill-formed UTF-8.
+  json-c's strict parser rejects every input byte above 0x7F when `char` is
+  signed, so non-ASCII text has to be written with `\u` escapes on that
+  backend. `\u` escapes behave the same on both.
 - Typed method helpers map common method-level JMAP `error` types to specific
   low-level errors when possible, while preserving method name, call id, error
   type, and description in session diagnostics.

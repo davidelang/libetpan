@@ -8,9 +8,13 @@
 
 #include "mailjson.h"
 
-#ifdef HAVE_JSON
-
+#if defined(HAVE_LIBFASTJSON)
+#include "mailjson_fastjson.h"
+#elif defined(HAVE_JSON)
 #include <json-c/json.h>
+#endif
+
+#if defined(HAVE_LIBFASTJSON) || defined(HAVE_JSON)
 
 #include <limits.h>
 #include <stdlib.h>
@@ -268,6 +272,84 @@ static int duplicate_keys_found(const char * data, size_t len)
   return scan.pos != scan.len;
 }
 
+#ifdef HAVE_LIBFASTJSON
+
+/*
+ * libfastjson does not validate UTF-8. Reject sequences that are not
+ * Unicode scalar values. json-c strict mode, with char signed, rejects
+ * every byte above 0x7F, so raw UTF-8 is accepted only on this backend.
+ */
+static int utf8_text_ok(const char * data, size_t len)
+{
+  const unsigned char * bytes;
+  size_t index;
+
+  bytes = (const unsigned char *) data;
+  index = 0;
+  while (index < len) {
+    unsigned char lead;
+    size_t need;
+    size_t extra;
+
+    lead = bytes[index];
+    if (lead <= 0x7F) {
+      index ++;
+      continue;
+    }
+    if ((lead >= 0xC2) && (lead <= 0xDF))
+      need = 2;
+    else if ((lead == 0xE0) || ((lead >= 0xE1) && (lead <= 0xEC)) ||
+        (lead == 0xEE) || (lead == 0xEF) || (lead == 0xED))
+      need = 3;
+    else if ((lead == 0xF0) || ((lead >= 0xF1) && (lead <= 0xF3)) ||
+        (lead == 0xF4))
+      need = 4;
+    else
+      return 0;
+    if (index + need > len)
+      return 0;
+    for (extra = 1; extra < need; extra ++) {
+      if ((bytes[index + extra] & 0xC0) != 0x80)
+        return 0;
+    }
+    if ((lead == 0xE0) && (bytes[index + 1] < 0xA0))
+      return 0;
+    if ((lead == 0xED) && (bytes[index + 1] >= 0xA0))
+      return 0;
+    if ((lead == 0xF0) && (bytes[index + 1] < 0x90))
+      return 0;
+    if ((lead == 0xF4) && (bytes[index + 1] >= 0x90))
+      return 0;
+    index += need;
+  }
+  return 1;
+}
+
+/*
+ * libfastjson writes every '/' as '\/'. A preceding '\\' stays escaped,
+ * so replacing the two-byte sequence '\/' with '/' restores the json-c
+ * JSON_C_TO_STRING_NOSLASHESCAPE text.
+ */
+static void unescape_json_solidus(char * text)
+{
+  char * read;
+  char * write;
+
+  read = text;
+  write = text;
+  while (* read != '\0') {
+    if ((read[0] == '\\') && (read[1] == '/')) {
+      * write ++ = '/';
+      read += 2;
+      continue;
+    }
+    * write ++ = * read ++;
+  }
+  * write = '\0';
+}
+
+#endif
+
 static int compare_keys(const void * left, const void * right)
 {
   const char * const * left_key;
@@ -374,6 +456,10 @@ int mailjson_parse(const char * data, size_t len, mailjson_value ** result)
   * result = NULL;
   if (len >= INT_MAX)
     return MAILJSON_ERROR_PARSE;
+#ifdef HAVE_LIBFASTJSON
+  if (!utf8_text_ok(data, len))
+    return MAILJSON_ERROR_PARSE;
+#endif
   terminated = malloc(len + 1);
   if (terminated == NULL)
     return MAILJSON_ERROR_MEMORY;
@@ -420,6 +506,10 @@ int mailjson_serialize(mailjson_value * value, int flags,
   json_flags |= JSON_C_TO_STRING_NOSLASHESCAPE;
   serialized = json_object_to_json_string_ext(serialized_value, json_flags);
   data = dup_string(serialized);
+#ifdef HAVE_LIBFASTJSON
+  if (data != NULL)
+    unescape_json_solidus(data);
+#endif
   if ((flags & MAILJSON_SERIALIZE_SORT_KEYS) != 0)
     json_object_put(serialized_value);
   if (data == NULL)

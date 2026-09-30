@@ -71,6 +71,9 @@ clang -g -O1 -fsanitize=address,fuzzer \
     -o fuzz_jmap_response
 ```
 
+Link `-lfastjson` instead of `-ljson-c` when libetpan was configured with
+`--with-json=libfastjson`.
+
 ## Run
 
 ```

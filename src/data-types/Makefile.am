@@ -82,6 +82,7 @@ noinst_HEADERS = \
 	base64.h \
 	mail.h \
 	maillock.h \
+	mailjson_fastjson.h \
 	mailstream_compress.h \
 	mailstream_gnutls.h \
 	mailstream_openssl.h \

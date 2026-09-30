@@ -60,6 +60,9 @@ and `libiconv.a`, plus the NDK system libs `z` and `log`. Link order matters
 etpan  json-c  sasl2  ssl  crypto  iconv  z  log
 ```
 
+This Android build stays on JSON-C. libfastjson is the Unix autotools option
+`--with-json=libfastjson` and is not used here.
+
 Build JSON-C for Android separately and set `JSON_C_PATH` to a prefix
 containing `include/json-c/json.h` before running `build.sh`:
 

@@ -838,27 +838,86 @@ fi
 AM_CONDITIONAL([HAVE_CURL], [test "x$libcurl" = "xyes"])
 
 dnl JSON
+dnl JSON_C_CFLAGS and JSON_C_LIBS keep their historical automake names.
+dnl --with-json=libfastjson stores that library in the same variables.
+dnl Callers that already consume JSON_C_CFLAGS / JSON_C_LIBS keep working.
 AC_ARG_WITH([json],
-  [AS_HELP_STRING([--with-json],
-    [include JSON-C backed JSON support @<:@default=auto@:>@])],
+  [AS_HELP_STRING([--with-json@<:@=auto|yes|no|json-c|libfastjson@:>@],
+    [JSON backend for low-level JSON support @<:@default=auto@:>@])],
   [], [with_json=auto])
 
 have_json=no
-AS_IF([test "x$with_json" != xno], [
-  PKG_CHECK_MODULES([JSON_C], [json-c >= 0.14],
-    [have_json=yes],
-    [AS_IF([test "x$with_json" = xyes],
-      [AC_MSG_ERROR([JSON-C support requested but json-c >= 0.14 was not found])],
-      [have_json=no])])
+json_backend=no
+case "x$with_json" in
+  xauto)
+    PKG_CHECK_MODULES([JSON_C], [json-c >= 0.14],
+      [have_json=yes
+       json_backend=json-c],
+      [have_json=no])
+    ;;
+  xyes|xjson-c)
+    PKG_CHECK_MODULES([JSON_C], [json-c >= 0.14],
+      [have_json=yes
+       json_backend=json-c],
+      [AC_MSG_ERROR([JSON-C support requested but json-c >= 0.14 was not found])])
+    ;;
+  xlibfastjson)
+    PKG_CHECK_MODULES([JSON_C], [libfastjson >= 1.2304.0],
+      [have_json=yes
+       json_backend=libfastjson],
+      [AC_MSG_ERROR([libfastjson support requested but libfastjson >= 1.2304.0 was not found])])
+    ;;
+  xno)
+    ;;
+  *)
+    AC_MSG_ERROR([unknown JSON backend: $with_json])
+    ;;
+esac
+
+AS_IF([test "x$json_backend" = xlibfastjson], [
+  fjson_cppflags_save="$CPPFLAGS"
+  fjson_libs_save="$LIBS"
+  CPPFLAGS="$CPPFLAGS $JSON_C_CFLAGS"
+  LIBS="$JSON_C_LIBS $LIBS"
+  AC_LINK_IFELSE(
+    [AC_LANG_PROGRAM(
+      [[#define FJSON_NATIVE_API_ONLY 1
+#include <json.h>
+#ifndef _fj_json_h_
+#error json.h is not libfastjson
+#endif
+]],
+      [[struct fjson_object *object;
+struct fjson_tokener *tokener;
+struct fjson_object_iterator iter;
+object = fjson_object_new_int64(1);
+tokener = fjson_tokener_new();
+fjson_tokener_set_flags(tokener, FJSON_TOKENER_STRICT);
+iter = fjson_object_iter_begin(object);
+fjson_tokener_free(tokener);
+fjson_object_put(object);
+(void) iter;]])],
+    [],
+    [AC_MSG_ERROR([libfastjson was found but its headers and library could not be linked])])
+  CPPFLAGS="$fjson_cppflags_save"
+  LIBS="$fjson_libs_save"
 ])
+
+AC_MSG_CHECKING([JSON backend])
+AC_MSG_RESULT([$json_backend])
 AS_IF([test "x$have_json" = xyes],
-  [AC_DEFINE([HAVE_JSON], [1], [Define to include JSON-C backed JSON support])])
+  [AC_DEFINE([HAVE_JSON], [1], [Define to include JSON support])])
+AS_IF([test "x$json_backend" = xjson-c],
+  [AC_DEFINE([HAVE_JSON_C], [1], [Define when the JSON backend is json-c])])
+AS_IF([test "x$json_backend" = xlibfastjson],
+  [AC_DEFINE([HAVE_LIBFASTJSON], [1],
+    [Define when the JSON backend is libfastjson])])
 AM_CONDITIONAL([HAVE_JSON], [test "x$have_json" = xyes])
 
 dnl JMAP
 AC_ARG_WITH([jmap],
   [AS_HELP_STRING([--with-jmap],
-    [include low-level JMAP support using JSON-C and an HTTP backend @<:@default=auto@:>@])],
+    [include low-level JMAP support using JSON and an HTTP backend @<:@default=auto@:>@])],
   [], [with_jmap=auto])
 
 have_jmap=no

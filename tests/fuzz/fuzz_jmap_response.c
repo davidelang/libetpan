@@ -12,6 +12,8 @@
  *     -I . -I include -I src/low-level/jmap -I src/main \
  *     tests/fuzz/fuzz_jmap_response.c src/.libs/libetpan.a \
  *     -ljson-c -lcurl -lxml2 -lpthread -lz \
+ *   Use -lfastjson instead of -ljson-c when libetpan was configured with
+ *   --with-json=libfastjson.
  *     -o fuzz_jmap_response
  *
  * Run:

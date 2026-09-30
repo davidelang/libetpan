@@ -28,7 +28,13 @@ LDLIBS += $(shell pkg-config --libs icu-uc 2>/dev/null)
 ifeq ($(shell uname -s),Darwin)
 LDLIBS += -framework CoreFoundation -framework Foundation -liconv
 endif
+# Historical name. configure selects json-c or libfastjson into this value.
+# A '#' in this makefile starts a comment, so match the macro name and value
+# instead of the full #define line.
 JSON_C_LDLIBS := $(shell pkg-config --libs json-c 2>/dev/null || printf '%s' "-ljson-c")
+ifeq ($(shell awk '$$2 == "HAVE_LIBFASTJSON" && $$3 == "1" { print "yes" }' $(TOP)/config.h),yes)
+JSON_C_LDLIBS := $(shell pkg-config --libs libfastjson 2>/dev/null || printf '%s' "-lfastjson")
+endif
 OPENSSL_LDLIBS := $(shell pkg-config --libs openssl 2>/dev/null || printf '%s' "-lssl -lcrypto")
 RNP_LDLIBS := $(shell pkg-config --libs rnp 2>/dev/null || printf '%s' "-lrnp")
 XML2_CPPFLAGS := $(shell pkg-config --cflags libxml-2.0 2>/dev/null || { command -v xcrun >/dev/null 2>&1 && printf '%s' "-I$$(xcrun --show-sdk-path)/usr/include/libxml2" || printf '%s' "-I/usr/include/libxml2"; })

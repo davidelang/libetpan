@@ -62,6 +62,9 @@ The default project wiring expects:
 - JSON-C headers in `third-party/json-c/include` and `json-c.lib` in the
   active library path
 
+This Visual Studio build stays on JSON-C. libfastjson is the Unix autotools
+option `--with-json=libfastjson` and is not used here.
+
 Example command-line build:
 
 ```bat
